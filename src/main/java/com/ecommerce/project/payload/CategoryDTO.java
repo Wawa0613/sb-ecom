@@ -7,7 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CategoryDTO {
+public class CategoryDTO {//This class represents a Data Transfer Object (DTO) for Category.
+
     private Long categoryId;
     private String categoryName;
 }
