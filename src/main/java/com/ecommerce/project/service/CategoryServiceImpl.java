@@ -27,9 +27,23 @@ public class CategoryServiceImpl implements CategoryService{
 
     @Override
     public CategoryResponse getAllCategories(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+        //这段代码的作用是根据传入的 sortOrder 参数（升序或降序）动态创建一个 Sort 对象，用于指定分页查询的排序规则。
+        //Sort 是 Spring Data 提供的类，用于定义查询结果的排序规则。
+        //Sort.by(sortBy) 指定排序字段，ascending() 或 descending() 指定排序方向。
+        //检查 sortOrder 是否为 "asc"（不区分大小写）。
+        //如果是，则使用 Sort.by(sortBy).ascending() 创建一个升序排序对象。
+        //否则，使用 Sort.by(sortBy).descending() 创建一个降序排序对象。
         Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc")
                 ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
+
+        //Pageable:
+        //It is an interface that defines pagination information, such as page number, page size, and sorting.
+        //Common implementation: PageRequest.
+
+        //Page:
+        //It is an interface that represents a page of data, including the content and metadata (e.g., total pages, total elements).
+        //Common implementation: PageImpl.
 
         Pageable pageDetails = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
         Page<Category> categoryPage = categoryRepository.findAll(pageDetails);
@@ -41,6 +55,9 @@ public class CategoryServiceImpl implements CategoryService{
         List<CategoryDTO> categoryDTOS = categories.stream()
                 .map(category -> modelMapper.map(category, CategoryDTO.class))
                 .toList();
+
+        //创建一个 CategoryResponse 对象，用于封装分页查询的结果。
+        //这些方法是 Page 接口定义的，具体的实现由 PageImpl 或其他实现类完成。
 
         CategoryResponse categoryResponse = new CategoryResponse();
         categoryResponse.setContent(categoryDTOS);
@@ -54,6 +71,7 @@ public class CategoryServiceImpl implements CategoryService{
 
     @Override
     public CategoryDTO createCategory(CategoryDTO categoryDTO) {
+
         Category category = modelMapper.map(categoryDTO, Category.class);
         Category categoryFromDb = categoryRepository.findByCategoryName(category.getCategoryName());
         if (categoryFromDb != null)
