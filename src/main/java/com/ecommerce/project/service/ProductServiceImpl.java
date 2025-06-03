@@ -10,6 +10,7 @@ import com.ecommerce.project.repositories.ProductRespository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -90,5 +91,13 @@ public class ProductServiceImpl implements ProductService{
 
        Product savedProduct= productRespository.save(productFromDb);
         return modelMapper.map(savedProduct, ProductDTO.class);
+    }
+
+    @Override
+    public ProductDTO deleteProduct(Long productId) {
+        Product product=productRespository.findById(productId)
+                .orElseThrow(()->new ResourceNotFoundException("Product", "productId", productId));
+        productRespository.delete(product);
+        return modelMapper.map(product,ProductDTO.class);
     }
 }
