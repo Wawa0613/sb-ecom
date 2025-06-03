@@ -10,11 +10,8 @@ import com.ecommerce.project.repositories.ProductRespository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-
-import static java.util.stream.Collectors.toList;
 
 @Service
 public class ProductServiceImpl implements ProductService{
@@ -27,10 +24,11 @@ public class ProductServiceImpl implements ProductService{
     @Autowired
     private ModelMapper modelMapper;
     @Override
-    public ProductDTO addProduct(Long categoryId, Product product) {
+    public ProductDTO addProduct(Long categoryId, ProductDTO productDTO) {
         Category category=categoryRepository.findById(categoryId)
                 .orElseThrow(()->
                         new ResourceNotFoundException("Category", "categoryId", categoryId));
+        Product product=modelMapper.map(productDTO,Product.class);
         product.setImage("default.png");
         product.setCategory(category);
 
@@ -79,9 +77,10 @@ public class ProductServiceImpl implements ProductService{
     }
 
     @Override
-    public ProductDTO updateProduct(Long productId, Product product) {
+    public ProductDTO updateProduct(Long productId, ProductDTO productDTO) {
         Product productFromDb=productRespository.findById(productId)
                 .orElseThrow(()->new ResourceNotFoundException("Product", "productId", productId));
+        Product product=modelMapper.map(productDTO,Product.class);
         productFromDb.setProductName(product.getProductName());
         productFromDb.setDescription(product.getDescription());
         productFromDb.setQuantity(product.getQuantity());
