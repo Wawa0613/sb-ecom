@@ -9,7 +9,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -58,6 +60,12 @@ public class User {
                joinColumns = @JoinColumn(name="user_id"),
                inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles=new HashSet<>();
+
+    @ManyToMany(cascade = {CascadeType.PERSIST,CascadeType.MERGE})
+    @JoinTable(name="User_addresses",
+       joinColumns = @JoinColumn(name="user_id"),
+      inverseJoinColumns = @JoinColumn(name="address_id"))
+    private List<Address> address=new ArrayList<>();
 
     //这段代码的意思是：一个用户（User）拥有多个商品（Product），即 User 和 Product 之间是 一对多（OneToMany）关系。
     @OneToMany(mappedBy = "user",
