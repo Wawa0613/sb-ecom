@@ -58,4 +58,10 @@ public class User {
                joinColumns = @JoinColumn(name="user_id"),
                inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles=new HashSet<>();
+
+    //这段代码的意思是：一个用户（User）拥有多个商品（Product），即 User 和 Product 之间是 一对多（OneToMany）关系。
+    @OneToMany(mappedBy = "user",
+               cascade = {CascadeType.PERSIST, CascadeType.MERGE},//表示如果保存或更新 User，会连带保存或更新关联的 Product；
+                orphanRemoval=true)//表示如果某个 Product 不再属于任何 User（从 products 集合中移除），那它也会被从数据库中删除；
+    private Set<Product>products;
 }
