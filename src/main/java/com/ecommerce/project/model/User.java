@@ -63,7 +63,7 @@ public class User {
     @JoinTable(name="User_addresses",
        joinColumns = @JoinColumn(name="user_id"),
       inverseJoinColumns = @JoinColumn(name="address_id"))
-    private List<Address> address=new ArrayList<>();
+    private List<Address> addresses=new ArrayList<>();
 
     //这段代码的意思是：一个用户（User）拥有多个商品（Product），即 User 和 Product 之间是 一对多（OneToMany）关系。
     @ToString.Exclude
