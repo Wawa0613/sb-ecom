@@ -1,0 +1,78 @@
+package com.ecommerce.project.controller;
+
+import com.ecommerce.project.security.Request.LoginRequest;
+import com.ecommerce.project.security.Response.UserInfoResponse;
+import com.ecommerce.project.security.jwt.JwtUtils;
+import com.ecommerce.project.security.service.UserDetailsImpl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+public class AuthController {
+
+    @Autowired
+    private JwtUtils jwtUtils;//用于生成和验证 JWT 令牌。
+
+    @Autowired
+    private AuthenticationManager authenticationManager;//Spring Security 提供的认证管理器，用于验证用户凭据。
+/*
+authenticateUser 方法：
+通过 @PostMapping("/signin") 注解映射到 /signin 路径，处理用户登录请求。
+接收 LoginRequest 对象作为请求体，包含用户名和密码。
+使用 AuthenticationManager 验证用户凭据。如果验证失败，返回状态为 404 的响应，提示 "Bad credentials"。
+如果验证成功：
+将认证信息存储到 SecurityContextHolder 中。
+获取用户的详细信息（UserDetailsImpl）。
+使用 JwtUtils 生成 JWT 令牌。
+获取用户的角色列表。
+构造 UserInfoResponse 对象，包含用户 ID、用户名、角色和 JWT 令牌。
+返回状态为 200 的响应，携带用户信息。
+ */
+    @PostMapping("/signin")//该类负责处理用户登录请求，并返回认证结果（如 JWT 令牌和用户信息）。
+    public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {//loginRequest封装用户登录请求的类，包含用户名和密码。
+        Authentication authentication;
+        try {
+            authentication = authenticationManager
+                    .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+        } catch (AuthenticationException exception) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("message", "Bad credentials");
+            map.put("status", false);
+            return new ResponseEntity<Object>(map, HttpStatus.NOT_FOUND);
+        }
+
+
+        //SecurityContextHolder：
+        //是 Spring Security 提供的一个工具类，用于存储和获取当前线程的安全上下文（SecurityContext）。
+        //SecurityContext 包含了与当前用户相关的安全信息，例如认证信息和权限。
+        SecurityContextHolder.getContext().setAuthentication(authentication);//通过将认证信息存储到 SecurityContext 中，Spring Security
+        // 可以在后续的请求中通过上下文获取当前用户的身份和权限信息，从而实现权限控制和安全检查。用户登录成功后，认证信息会被存储到 SecurityContext 中，
+        // 后续的 API 请求可以通过上下文获取用户信息，而无需重新登录。
+
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();//这句代码的作用是从 Authentication
+        // 对象中获取当前认证用户的详细信息，并将其转换为自定义的 UserDetailsImpl 类型。
+
+        String jwtToken = jwtUtils.generateTokenFromUsername(userDetails);
+
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(item -> item.getAuthority())
+                .collect(Collectors.toList());
+
+        UserInfoResponse response = new UserInfoResponse(userDetails.getId(),//封装认证成功后返回的用户信息。
+                userDetails.getUsername(), roles, jwtToken);
+
+        return ResponseEntity.ok(response);
+    }
+}
