@@ -11,6 +11,7 @@ import com.ecommerce.project.security.Response.MessageResponse;
 import com.ecommerce.project.security.Response.UserInfoResponse;
 import com.ecommerce.project.security.jwt.JwtUtils;
 import com.ecommerce.project.security.service.UserDetailsImpl;
+import jakarta.servlet.http.PushBuilder;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -23,10 +24,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -145,5 +143,28 @@ authenticateUser 方法：
         userRepository.save(user);
 
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+    }
+
+    @GetMapping("/username")
+    public String currentUserName(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication(); // 从 SecurityContextHolder 获取认证信息
+        if (authentication != null) {
+            return authentication.getName(); // 返回当前用户的用户名
+        } else {
+            return "NULL"; // 如果认证信息为空，返回 "NULL"
+        }
+    }
+    @GetMapping("/user")
+    public ResponseEntity<?> getUserDetails(Authentication authentication){
+        UserDetailsImpl userDetails=(UserDetailsImpl) authentication.getPrincipal();
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(item -> item.getAuthority())
+                .collect(Collectors.toList());
+
+        UserInfoResponse response = new UserInfoResponse(userDetails.getId(),//封装认证成功后返回的用户信息。
+                userDetails.getUsername(), roles);
+
+            return ResponseEntity.ok().body(response);
+
     }
 }
