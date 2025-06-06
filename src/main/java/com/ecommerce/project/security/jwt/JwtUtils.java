@@ -49,11 +49,19 @@ public class JwtUtils {
            return null;
        }
    }
-
     public ResponseCookie generateJwtCookie(UserDetailsImpl userPrincipal) {
         String jwt = generateTokenFromUsername(userPrincipal);
-        ResponseCookie cookie = ResponseCookie.from(jwtCookie, jwt).path("/api").maxAge(24 * 60 * 60)
+        ResponseCookie cookie = ResponseCookie.from(jwtCookie, jwt)
+                .path("/api")
+                .maxAge(24 * 60 * 60)
                 .httpOnly(false)
+                .build();
+        return cookie;
+    }
+
+    public ResponseCookie getCleanJwtCookie() {
+
+        ResponseCookie cookie = ResponseCookie.from(jwtCookie, null).path("/api")
                 .build();
         return cookie;
     }

@@ -167,4 +167,12 @@ authenticateUser 方法：
             return ResponseEntity.ok().body(response);
 
     }
+    @PostMapping("/signout")
+        public ResponseEntity<?>signoutUser(){
+            ResponseCookie cookie=jwtUtils.getCleanJwtCookie();
+            return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE,
+                    cookie.toString())
+                    .body(new MessageResponse("You've been signed out!"));
+        }
+
 }
