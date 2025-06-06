@@ -3,6 +3,7 @@ package com.ecommerce.project.controller;
 import com.ecommerce.project.model.AppRole;
 import com.ecommerce.project.model.Role;
 import com.ecommerce.project.model.User;
+import com.ecommerce.project.repositories.RoleRepository;
 import com.ecommerce.project.repositories.UserRepository;
 import com.ecommerce.project.security.Request.LoginRequest;
 import com.ecommerce.project.security.Request.SignupRequest;
@@ -12,7 +13,9 @@ import com.ecommerce.project.security.jwt.JwtUtils;
 import com.ecommerce.project.security.service.UserDetailsImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -22,10 +25,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
+@RestController
+@RequestMapping("/api/auth")
 public class AuthController {
 
     @Autowired
@@ -76,16 +82,18 @@ authenticateUser 方法：
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();//这句代码的作用是从 Authentication
         // 对象中获取当前认证用户的详细信息，并将其转换为自定义的 UserDetailsImpl 类型。
 
-        String jwtToken = jwtUtils.generateTokenFromUsername(userDetails);
+        ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(userDetails);
 
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(item -> item.getAuthority())
                 .collect(Collectors.toList());
 
         UserInfoResponse response = new UserInfoResponse(userDetails.getId(),//封装认证成功后返回的用户信息。
-                userDetails.getUsername(), roles, jwtToken);
+                userDetails.getUsername(), roles);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+                .body(response);
     }
 
     @PostMapping("/signup")
