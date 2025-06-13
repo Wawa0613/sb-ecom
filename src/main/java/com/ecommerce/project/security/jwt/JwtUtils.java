@@ -22,10 +22,10 @@ import java.util.Date;
 public class JwtUtils {
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
 
-    @Value("${spring.app.jwtSecret}")
+    @Value("${spring.app.jwtSecret}") // JWT 签名用的密钥（配置在 application.properties）
     private String jwtSecret;
 
-    @Value("${spring.app.jwtExpirationMs}")
+    @Value("${spring.app.jwtExpirationMs}")//// 过期时间，单位 ms（毫秒）
     private int jwtExpirationMs;
     @Value("${spring.ecom.app.jwtCookieName}")
     private String jwtCookie;

@@ -59,11 +59,15 @@ public class User {
     private Set<Role> roles=new HashSet<>();
     @Getter
     @Setter
-    @ManyToMany(cascade = {CascadeType.PERSIST,CascadeType.MERGE})
-    @JoinTable(name="User_addresses",
-       joinColumns = @JoinColumn(name="user_id"),
-      inverseJoinColumns = @JoinColumn(name="address_id"))
+    @OneToMany (mappedBy = "user",cascade =  {CascadeType.PERSIST,CascadeType.MERGE},orphanRemoval = true)
+   // @JoinTable(name="User_addresses",
+     //  joinColumns = @JoinColumn(name="user_id"),
+     // inverseJoinColumns = @JoinColumn(name="address_id"))
     private List<Address> addresses=new ArrayList<>();
+
+    @ToString.Exclude
+    @OneToOne(mappedBy = "user",cascade ={CascadeType.PERSIST, CascadeType.MERGE})
+    private Cart cart;
 
     //这段代码的意思是：一个用户（User）拥有多个商品（Product），即 User 和 Product 之间是 一对多（OneToMany）关系。
     @ToString.Exclude
